@@ -29,14 +29,12 @@ on:
         required: true
         default: 'krateoplatformops'
 
-
 env:
   GHCR_REPO: ghcr.io/${{ github.repository }}
 
 jobs:
   generate-notes:
-    permissions:
-      contents: write
+    permissions: write-all
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -52,3 +50,4 @@ jobs:
           INSTALLER_CHART_VERSION_PREVIOUS: ${{ inputs.installerChartVersionPrevious }}
           TOKEN: ${{ secrets.GITHUB_TOKEN }}
           ORGANIZATION: ${{ inputs.organization }}
+      - run: cat release_notes.md
