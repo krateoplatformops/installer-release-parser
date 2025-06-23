@@ -1,0 +1,51 @@
+name: release-tag
+
+on:
+  workflow_dispatch:
+    inputs:
+      installerChartRegistry:
+        description: 'Installer Chart Registry'
+        type: environment
+        required: true
+        default: 'https://charts.krateo.io/'
+      installerChartRepository:
+        description: 'Installer Chart Reporitory'
+        type: environment
+        required: true
+        default: 'installer'
+      installerChartVersion:
+        description: 'Installer Chart Version'
+        type: environment
+        required: true
+        default: '2.4.3'
+      installerChartVersionPrevious:
+        description: 'Installer Chart Previous Version'
+        type: environment
+        required: true
+        default: '2.3.0'
+      organization:
+        description: 'GitHub Organization to retrieve release notes from'
+        type: environment
+        required: true
+        default: 'krateoplatformops'
+
+
+env:
+  GHCR_REPO: ghcr.io/${{ github.repository }}
+
+jobs:
+  generate-tags:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/setup-go@v5
+        with:
+          go-version: 'stable'
+      - run: |
+          go run main.go
+        env:
+          INSTALLER_CHART_REGISTRY: ${{ inputs.installerChartRegistry }}
+          INSTALLER_CHART_REPOSITORY: ${{ inputs.installerChartRepository }}
+          INSTALLER_CHART_VERSION: ${{ inputs.installerChartVersion }}
+          INSTALLER_CHART_VERSION_PREVIOUS: ${{ inputs.installerChartVersionPrevious }}
+          TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          ORGANIZATION: ${{ inputs.organization }}
