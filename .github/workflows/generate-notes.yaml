@@ -37,12 +37,11 @@ jobs:
   generate-notes:
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v4
       - uses: actions/setup-go@v5
         with:
           go-version: 'stable'
       - run: |
-          pwd
-          ls
           go run main.go
         env:
           INSTALLER_CHART_REGISTRY: ${{ inputs.installerChartRegistry }}
