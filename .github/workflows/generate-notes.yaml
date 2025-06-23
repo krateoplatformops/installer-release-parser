@@ -35,6 +35,8 @@ env:
 
 jobs:
   generate-notes:
+    permissions:
+      contents: write
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
