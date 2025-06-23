@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"installer-release-parser/apis"
+	"io"
 
 	"github.com/google/go-github/v72/github"
 	"github.com/rs/zerolog/log"
@@ -24,16 +25,17 @@ func GetReleaseNotes(charts map[string]apis.Repoes, token *string, owner string)
 			log.Warn().Msg("empty previous version, using automatic option")
 		}
 		log.Info().Msgf("Generating release notes for %s with tag range %s ... %s", chart.ImageName, chart.AppVersionPrevious, chart.AppVersion)
-		release, _, err := client.Repositories.GenerateReleaseNotes(context.Background(), owner, chart.ImageName, &github.GenerateNotesOptions{
+		release, response, err := client.Repositories.GenerateReleaseNotes(context.Background(), owner, chart.ImageName, &github.GenerateNotesOptions{
 			TagName:         chart.AppVersion,
 			PreviousTagName: &chart.AppVersionPrevious,
 		})
 		if err != nil {
 			log.Warn().Err(err).Msgf("Skipping %s: there was an error generating the release", chart.ImageName)
+			bodyData, _ := io.ReadAll(response.Body)
+			log.Warn().Msgf("Body %s", string(bodyData))
 		} else {
 			finalReleaseNotes += fmt.Sprintf("# %s v%s\n## What's Changed\n%s\n\n", chart.ImageName, chart.AppVersion, formatReleaseNotes(release.Body))
 		}
-		//
 	}
 
 	return finalReleaseNotes
