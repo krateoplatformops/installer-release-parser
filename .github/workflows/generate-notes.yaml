@@ -51,6 +51,6 @@ jobs:
           INSTALLER_CHART_REPOSITORY: ${{ inputs.installerChartRepository }}
           INSTALLER_CHART_VERSION: ${{ inputs.installerChartVersion }}
           INSTALLER_CHART_VERSION_PREVIOUS: ${{ inputs.installerChartVersionPrevious }}
-          TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TOKEN: ${{ secrets.TOKEN_CONTENTS_WORKFLOWS }}
           ORGANIZATION: ${{ inputs.organization }}
       - run: cat release_notes.md
