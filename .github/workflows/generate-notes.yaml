@@ -53,4 +53,5 @@ jobs:
           INSTALLER_CHART_VERSION_PREVIOUS: ${{ inputs.installerChartVersionPrevious }}
           TOKEN: ${{ secrets.TOKEN_CONTENTS_WORKFLOWS }}
           ORGANIZATION: ${{ inputs.organization }}
-      - run: cat release_notes.md
+      - id: "RELEASE NOTES"
+        run: cat release_notes.md
