@@ -1,31 +1,31 @@
-name: release-tag
+name: generate-notes
 
 on:
   workflow_dispatch:
     inputs:
       installerChartRegistry:
         description: 'Installer Chart Registry'
-        type: environment
+        type: string
         required: true
         default: 'https://charts.krateo.io/'
       installerChartRepository:
         description: 'Installer Chart Reporitory'
-        type: environment
+        type: string
         required: true
         default: 'installer'
       installerChartVersion:
         description: 'Installer Chart Version'
-        type: environment
+        type: string
         required: true
         default: '2.4.3'
       installerChartVersionPrevious:
         description: 'Installer Chart Previous Version'
-        type: environment
+        type: string
         required: true
         default: '2.3.0'
       organization:
         description: 'GitHub Organization to retrieve release notes from'
-        type: environment
+        type: string
         required: true
         default: 'krateoplatformops'
 
