@@ -34,13 +34,15 @@ env:
   GHCR_REPO: ghcr.io/${{ github.repository }}
 
 jobs:
-  generate-tags:
+  generate-notes:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/setup-go@v5
         with:
           go-version: 'stable'
       - run: |
+          pwd
+          ls
           go run main.go
         env:
           INSTALLER_CHART_REGISTRY: ${{ inputs.installerChartRegistry }}
