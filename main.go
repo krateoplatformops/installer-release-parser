@@ -7,6 +7,7 @@ import (
 	"installer-release-parser/internal/helpers/github"
 	"installer-release-parser/internal/helpers/helm"
 	"os"
+	"strings"
 
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
@@ -73,6 +74,7 @@ func main() {
 		log.Debug().Msgf("%s: %s", key, allPreviousCharts[key])
 	}
 
+	// Get the version changes
 	allRangeCharts := map[string]apis.Repoes{}
 	for key := range allCharts {
 		if _, ok := allPreviousCharts[key]; ok {
@@ -99,10 +101,25 @@ func main() {
 		}
 	}
 
+	// Get the removed charts
+	removedChartsTextBuilder := strings.Builder{}
+	removedChartsTextBuilder.WriteString("## Removed Charts\n")
+	for key := range allPreviousCharts {
+		if _, ok := allCharts[key]; !ok {
+			removedChartsTextBuilder.WriteString(fmt.Sprintf("- %s v%s: Removed\n", allPreviousCharts[key].ImageName, allPreviousCharts[key].AppVersion))
+		}
+	}
+
+	removedChartsText := removedChartsTextBuilder.String()
+	if removedChartsText == "## Removed Charts\n" {
+		removedChartsTextBuilder.WriteString("Nothing removed\n")
+		removedChartsText = removedChartsTextBuilder.String()
+	}
+
 	// Call the Github API to get the release notes
 	// If config.CreateReleases is set to true, create the release notes for the tag appVersion (if it does not exist)
 	log.Info().Msg("Generating release notes...")
-	finalReleaseNotes := fmt.Sprintf("Release Notes For Krateo %s ... %s\n%s", config.InstallerChartVersionPrevious, config.InstallerChartVersion, github.GetReleaseNotes(allRangeCharts, config.Token, config.Organization))
+	finalReleaseNotes := fmt.Sprintf("# Release Notes For Krateo %s ... %s\n%s\n%s", config.InstallerChartVersionPrevious, config.InstallerChartVersion, removedChartsText, github.GetReleaseNotes(allRangeCharts, config.Token, config.Organization))
 
 	// Write the result to file
 	log.Info().Msg("Writing the release notes to file...")

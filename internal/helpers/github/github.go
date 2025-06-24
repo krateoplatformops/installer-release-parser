@@ -34,7 +34,7 @@ func GetReleaseNotes(charts map[string]apis.Repoes, token *string, owner string)
 			bodyData, _ := io.ReadAll(response.Body)
 			log.Warn().Msgf("Body %s", string(bodyData))
 		} else {
-			finalReleaseNotes += fmt.Sprintf("# %s v%s\n## What's Changed\n%s\n\n", chart.ImageName, chart.AppVersion, formatReleaseNotes(release.Body))
+			finalReleaseNotes += fmt.Sprintf("## %s v%s\n### What's Changed\n%s\n\n", chart.ImageName, chart.AppVersion, formatReleaseNotes(release.Body))
 		}
 	}
 
