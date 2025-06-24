@@ -16,6 +16,12 @@ func formatReleaseNotes(input string) string {
 	for _, line := range lines {
 		line = strings.TrimSpace(line)
 		matches := commitRegex.FindStringSubmatch(line)
+
+		if strings.Contains(line, "**Full Changelog**") {
+			changelogLink = line
+			continue
+		}
+
 		if len(matches) != 4 {
 			continue
 		}
@@ -30,8 +36,6 @@ func formatReleaseNotes(input string) string {
 			fixes = append(fixes, formatted)
 		case strings.HasPrefix(message, "docs"):
 			docs = append(docs, formatted)
-		case strings.HasPrefix(message, "**Full Changelog"):
-			changelogLink = message
 		case regexp.MustCompile(`^.+`).MatchString(message):
 			other = append(other, formatted)
 		}
@@ -59,6 +63,7 @@ func formatReleaseNotes(input string) string {
 		sb.WriteString("\n")
 	}
 
+	sb.WriteString("\n")
 	sb.WriteString(changelogLink)
 	sb.WriteString("\n")
 
