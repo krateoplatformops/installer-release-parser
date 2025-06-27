@@ -13,16 +13,21 @@ on:
         type: string
         required: true
         default: 'installer'
+      installerChartGithubRepository:
+        description: 'Installer Chart Github Reporitory'
+        type: string
+        required: true
+        default: 'installer-chart'
       installerChartVersion:
         description: 'Installer Chart Version'
         type: string
         required: true
-        default: '2.4.3'
+        default: '2.5.0'
       installerChartVersionPrevious:
         description: 'Installer Chart Previous Version'
         type: string
         required: true
-        default: '2.3.0'
+        default: '2.4.3'
       organization:
         description: 'GitHub Organization to retrieve release notes from'
         type: string
@@ -49,6 +54,7 @@ jobs:
         env:
           INSTALLER_CHART_REGISTRY: ${{ inputs.installerChartRegistry }}
           INSTALLER_CHART_REPOSITORY: ${{ inputs.installerChartRepository }}
+          INSTALLER_CHART_GITHUB_REPOSITORY: ${{ inputs.installerChartGithubRepository }}
           INSTALLER_CHART_VERSION: ${{ inputs.installerChartVersion }}
           INSTALLER_CHART_VERSION_PREVIOUS: ${{ inputs.installerChartVersionPrevious }}
           TOKEN: ${{ secrets.TOKEN_CONTENTS_WORKFLOWS }}
