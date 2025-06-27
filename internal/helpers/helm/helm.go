@@ -112,10 +112,13 @@ func ParseValues() (map[string]apis.Repoes, error) {
 		imageURLParts := strings.Split(imageURL, "/")
 		imageName := imageURLParts[len(imageURLParts)-1]
 		if err != nil {
-			log.Warn().Err(err).Msgf("Skipping %s: failed to get image.repository", topLevelKey)
+			log.Warn().Err(err).Msgf("%s: failed to get image.repository", topLevelKey)
 			log.Info().Msgf("Checking %s for hardcoded value", topLevelKey)
 			if value, ok := HARDCODED_REPOSITORIES[topLevelKey]; ok {
 				imageName = value
+			} else {
+				log.Warn().Err(err).Msgf("Skipping %s: no hardcoded value found", topLevelKey)
+				continue
 			}
 		}
 
