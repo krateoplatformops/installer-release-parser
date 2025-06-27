@@ -74,19 +74,41 @@ func main() {
 		log.Debug().Msgf("%s: %s", key, allPreviousCharts[key])
 	}
 
+	// Get the removed charts
+	removedChartsTextBuilder := strings.Builder{}
+	removedChartsTextBuilder.WriteString("## Removed Charts\n")
+	for key := range allPreviousCharts {
+		if _, ok := allCharts[key]; !ok {
+			removedChartsTextBuilder.WriteString(fmt.Sprintf("- %s v%s: Removed\n", allPreviousCharts[key].ImageName, allPreviousCharts[key].AppVersion))
+		}
+	}
+
 	// Get the version changes
 	allRangeCharts := map[string]apis.Repoes{}
 	for key := range allCharts {
 		if _, ok := allPreviousCharts[key]; ok {
-			allRangeCharts[key] = apis.Repoes{
-				ImageName: allCharts[key].ImageName,
-				Chart: apis.Chart{
-					Repository:         allCharts[key].Chart.Repository,
-					Version:            allCharts[key].Chart.Version,
-					AppVersion:         allCharts[key].Chart.AppVersion,
-					Registry:           allCharts[key].Chart.Registry,
-					AppVersionPrevious: allPreviousCharts[key].Chart.AppVersion,
-				},
+			if allCharts[key].ImageName != allPreviousCharts[key].ImageName {
+				removedChartsTextBuilder.WriteString(fmt.Sprintf("- %s v%s: Removed\n", allPreviousCharts[key].ImageName, allPreviousCharts[key].AppVersion))
+				allRangeCharts[key] = apis.Repoes{
+					ImageName: allCharts[key].ImageName,
+					Chart: apis.Chart{
+						Repository: allCharts[key].Chart.Repository,
+						Version:    allCharts[key].Chart.Version,
+						AppVersion: allCharts[key].Chart.AppVersion,
+						Registry:   allCharts[key].Chart.Registry,
+					},
+				}
+			} else {
+				allRangeCharts[key] = apis.Repoes{
+					ImageName: allCharts[key].ImageName,
+					Chart: apis.Chart{
+						Repository:         allCharts[key].Chart.Repository,
+						Version:            allCharts[key].Chart.Version,
+						AppVersion:         allCharts[key].Chart.AppVersion,
+						Registry:           allCharts[key].Chart.Registry,
+						AppVersionPrevious: allPreviousCharts[key].Chart.AppVersion,
+					},
+				}
 			}
 		} else {
 			allRangeCharts[key] = apis.Repoes{
@@ -98,15 +120,6 @@ func main() {
 					Registry:   allCharts[key].Chart.Registry,
 				},
 			}
-		}
-	}
-
-	// Get the removed charts
-	removedChartsTextBuilder := strings.Builder{}
-	removedChartsTextBuilder.WriteString("## Removed Charts\n")
-	for key := range allPreviousCharts {
-		if _, ok := allCharts[key]; !ok {
-			removedChartsTextBuilder.WriteString(fmt.Sprintf("- %s v%s: Removed\n", allPreviousCharts[key].ImageName, allPreviousCharts[key].AppVersion))
 		}
 	}
 

@@ -8,6 +8,14 @@ import (
 	yaml "gopkg.in/yaml.v3"
 )
 
+var (
+	HARDCODED_REPOSITORIES = map[string]string{
+		"composableportalstarter": "composable-portal-starter",
+		"composableportalbasic":   "composable-portal-basic",
+		"finopspolicies":          "finops-moving-window-policy-chart",
+	}
+)
+
 // Helper function to safely get string from nested map
 func getStringFromMap(m map[string]any, keys ...string) (string, error) {
 	current := m
@@ -41,5 +49,9 @@ func getAppVersionFromChart(chartName string) (string, error) {
 		return "", fmt.Errorf("failed to unmarshal Chart.yaml for %s: %w", chartName, err)
 	}
 
-	return metadata.AppVersion, nil
+	if metadata.AppVersion != "" {
+		return metadata.AppVersion, nil
+	} else {
+		return metadata.Version, nil
+	}
 }

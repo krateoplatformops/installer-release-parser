@@ -19,7 +19,9 @@ The script looks for all top level keys inside `krateoplatformops` in the values
 - `chart.repository`
 - `image.repository`
 
-All the chart information is used to download the chart and get the `appVersion`. Then, the `image.repository` and the `appVersion` are used to get the release notes.
+If `image.repository`, the repository name is obtained from an hardcoded list of repositories. 
+
+All the chart information is used to download the chart and get the `appVersion`. Then, the `image.repository` and the `appVersion` are used to get the release notes. If `appVersion` is missing from the chart, then `version` is used instead.
 
 ## Release Notes Versions
 The release note is generated for each tag between the installer version `INSTALLER_CHART_VERSION_PREVIOUS` and `INSTALLER_CHART_VERSION`. If a chart name cannot be found in the installer version `INSTALLER_CHART_VERSION_PREVIOUS`, then Github's automatic option for release note generation is used: the previous tag is chosen automatically, and it usually defaults to the most recent or the previous tag (semantically).

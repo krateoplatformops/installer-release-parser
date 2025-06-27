@@ -46,7 +46,7 @@ func Pull(chart apis.Chart) error {
 		return err
 	}
 
-	log.Debug().Msgf("helm pull result: %s", result)
+	log.Debug().Msgf("%s: helm pull result: %s", chart.Repository, result)
 	return nil
 }
 
@@ -113,7 +113,10 @@ func ParseValues() (map[string]apis.Repoes, error) {
 		imageName := imageURLParts[len(imageURLParts)-1]
 		if err != nil {
 			log.Warn().Err(err).Msgf("Skipping %s: failed to get image.repository", topLevelKey)
-			continue
+			log.Info().Msgf("Checking %s for hardcoded value", topLevelKey)
+			if value, ok := HARDCODED_REPOSITORIES[topLevelKey]; ok {
+				imageName = value
+			}
 		}
 
 		err = Pull(apis.Chart{
