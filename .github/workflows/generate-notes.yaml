@@ -46,6 +46,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Authenticate with GitHub App
+        id: authenticate
+        uses: tibdex/github-app-token@v1
+        with:
+          app_id: ${{ secrets.APP_ID }}
+          private_key: ${{ secrets.PRIVATE_KEY }}
       - uses: actions/setup-go@v5
         with:
           go-version: 'stable'
@@ -57,7 +63,7 @@ jobs:
           INSTALLER_CHART_GITHUB_REPOSITORY: ${{ inputs.installerChartGithubRepository }}
           INSTALLER_CHART_VERSION: ${{ inputs.installerChartVersion }}
           INSTALLER_CHART_VERSION_PREVIOUS: ${{ inputs.installerChartVersionPrevious }}
-          TOKEN: ${{ secrets.TOKEN_CONTENTS_WORKFLOWS }}
+          TOKEN: ${{ steps.authenticate.outputs.token }}
           ORGANIZATION: ${{ inputs.organization }}
       - id: "RELEASE_NOTES"
         run: cat release_notes.md
