@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"installer-release-parser/apis"
 	"installer-release-parser/internal/helpers/configuration"
+	"installer-release-parser/internal/helpers/helm"
 	"io"
 
 	"github.com/google/go-github/v72/github"
@@ -31,9 +32,23 @@ func GetReleaseNotes(charts map[string]apis.Repoes, token *string, owner string)
 			PreviousTagName: &chart.AppVersionPrevious,
 		})
 		if err != nil {
-			log.Warn().Err(err).Msgf("Skipping %s: there was an error generating the release", chart.ImageName)
+			log.Warn().Err(err).Msgf("%s: there was an error generating the release", chart.ImageName)
 			bodyData, _ := io.ReadAll(response.Body)
 			log.Warn().Msgf("Body %s", string(bodyData))
+			log.Warn().Msg("Container probably missing, trying hardcoded values with chart version...")
+			if value, ok := helm.HARDCODED_REPOSITORIES[chart.ImageName]; ok {
+				log.Info().Msgf("Generating release notes for %s with tag range %s ... %s", value, chart.AppVersionPrevious, chart.AppVersion)
+				release, response, errr := client.Repositories.GenerateReleaseNotes(context.Background(), owner, value, &github.GenerateNotesOptions{
+					TagName: chart.Version,
+				})
+				if errr != nil {
+					log.Warn().Err(err).Msgf("%s: there was an error generating the release for the chart", value)
+					bodyData, _ := io.ReadAll(response.Body)
+					log.Warn().Msgf("Body %s", string(bodyData))
+				} else {
+					finalReleaseNotes += fmt.Sprintf("## %s v%s\n### What's Changed\n%s\n\n", value, chart.Version, formatReleaseNotes(release.Body))
+				}
+			}
 		} else {
 			finalReleaseNotes += fmt.Sprintf("## %s v%s\n### What's Changed\n%s\n\n", chart.ImageName, chart.AppVersion, formatReleaseNotes(release.Body))
 		}

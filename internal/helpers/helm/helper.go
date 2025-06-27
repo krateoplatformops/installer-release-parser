@@ -13,6 +13,8 @@ var (
 		"composableportalstarter": "composable-portal-starter",
 		"composableportalbasic":   "composable-portal-basic",
 		"finopspolicies":          "finops-moving-window-policy-chart",
+		"crate":                   "cratedb-chart",
+		"opa":                     "opa-chart",
 	}
 )
 

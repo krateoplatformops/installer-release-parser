@@ -147,6 +147,19 @@ func ParseValues() (map[string]apis.Repoes, error) {
 				Registry:   chartRepository,
 			},
 		}
+
+		if chartEtcd, ok := topLevelValue["etcd"]; ok {
+			chartMap := chartEtcd.(map[string]any)["chart"].(map[string]any)
+			result["etcd"] = apis.Repoes{
+				ImageName: "etcd-chart",
+				Chart: apis.Chart{
+					Repository: chartMap["name"].(string),
+					Version:    chartMap["version"].(string),
+					AppVersion: chartMap["version"].(string),
+					Registry:   chartMap["repository"].(string),
+				},
+			}
+		}
 	}
 
 	if len(result) == 0 {
