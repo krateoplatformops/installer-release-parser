@@ -6,8 +6,9 @@ This script creates the release notes for all repositories listed in the Krateo 
 The script reads the following environment variables/command line arguments
 - `INSTALLER_CHART_REGISTRY` / `installerchartregistry`: defaults to `https://charts.krateo.io/`
 - `INSTALLER_CHART_REPOSITORY` / `installerchartrepository`: defaults to `installer`
-- `INSTALLER_CHART_VERSION` / `installerchartversion`: defaults to `2.4.3`
-- `INSTALLER_CHART_VERSION_PREVIOUS` / `installerchartversionprevious`: defaults to `2.3.0`, must be smaller than `INSTALLER_CHART_VERSION`
+- `INSTALLER_CHART_GITHUB_REPOSITORY` / `installerchartgithubrepository`: defaults to `installer-chart`
+- `INSTALLER_CHART_VERSION` / `installerchartversion`: defaults to `2.5.0`
+- `INSTALLER_CHART_VERSION_PREVIOUS` / `installerchartversionprevious`: defaults to `2.4.3`, must be smaller than `INSTALLER_CHART_VERSION`
 - `TOKEN` / `token`: defaults to empty (API Requests limited to 60 per hour)
 - `ORGANIZATION` / `organization`: defaults to `krateoplatformops`
 

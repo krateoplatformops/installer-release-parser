@@ -119,7 +119,7 @@ func main() {
 	// Call the Github API to get the release notes
 	// If config.CreateReleases is set to true, create the release notes for the tag appVersion (if it does not exist)
 	log.Info().Msg("Generating release notes...")
-	finalReleaseNotes := fmt.Sprintf("# Release Notes For Krateo %s ... %s\n%s\n%s", config.InstallerChartVersionPrevious, config.InstallerChartVersion, removedChartsText, github.GetReleaseNotes(allRangeCharts, config.Token, config.Organization))
+	finalReleaseNotes := fmt.Sprintf("%s\n%s", removedChartsText, github.GetReleaseNotes(allRangeCharts, config.Token, config.Organization))
 
 	// Write the result to file
 	log.Info().Msg("Writing the release notes to file...")
@@ -129,6 +129,10 @@ func main() {
 		cleanup()
 		return
 	}
+
+	// Publish the release notes on a github release for the given repository
+	log.Info().Msgf("Publishing release on installer repository %s/%s:%s", config.Organization, config.InstallerChartGithubRepository, config.InstallerChartVersion)
+	github.CreateInstallerRelease(finalReleaseNotes, config)
 	cleanup()
 }
 

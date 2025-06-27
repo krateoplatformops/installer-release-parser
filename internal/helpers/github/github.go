@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"installer-release-parser/apis"
+	"installer-release-parser/internal/helpers/configuration"
 	"io"
 
 	"github.com/google/go-github/v72/github"
@@ -39,4 +40,41 @@ func GetReleaseNotes(charts map[string]apis.Repoes, token *string, owner string)
 	}
 
 	return finalReleaseNotes
+}
+
+func CreateInstallerRelease(releaseNotes string, config configuration.Configuration) {
+	client := github.NewClient(nil)
+
+	if config.Token != nil {
+		client = client.WithAuthToken(*config.Token)
+	}
+
+	release, _, err := client.Repositories.GetReleaseByTag(context.Background(), config.Organization, config.InstallerChartGithubRepository, config.InstallerChartVersion)
+	if err != nil {
+		log.Info().Msgf("Release not found for tag %s", config.InstallerChartVersion)
+		_, response, errr := client.Repositories.CreateRelease(context.Background(), config.Organization, config.InstallerChartGithubRepository, &github.RepositoryRelease{
+			TagName:    &config.InstallerChartVersion,
+			Name:       stringPointer(fmt.Sprintf("Release Notes For Krateo %s ... %s\n", config.InstallerChartVersionPrevious, config.InstallerChartVersion)),
+			Body:       &releaseNotes,
+			MakeLatest: stringPointer("true"),
+		})
+		if errr != nil {
+			log.Error().Err(err).Msgf("could not create release")
+			bodyData, _ := io.ReadAll(response.Body)
+			log.Error().Msgf("Body %s", string(bodyData))
+		} else {
+			log.Info().Msgf("Release created for tag %s", config.InstallerChartVersion)
+		}
+	} else {
+		release.Body = &releaseNotes
+		_, response, errr := client.Repositories.EditRelease(context.Background(), config.Organization, config.InstallerChartGithubRepository, *release.ID, release)
+		if errr != nil {
+			log.Error().Err(err).Msgf("could not edit release")
+			bodyData, _ := io.ReadAll(response.Body)
+			log.Error().Msgf("Body %s", string(bodyData))
+		} else {
+			log.Info().Msgf("Release edited for tag %s", config.InstallerChartVersion)
+		}
+	}
+
 }

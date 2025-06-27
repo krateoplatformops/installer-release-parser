@@ -63,9 +63,13 @@ func formatReleaseNotes(input string) string {
 		sb.WriteString("\n")
 	}
 
-	sb.WriteString("\n")
+	sb.WriteString("\n\n")
 	sb.WriteString(changelogLink)
 	sb.WriteString("\n")
 
 	return sb.String()
+}
+
+func stringPointer(value string) *string {
+	return &value
 }
