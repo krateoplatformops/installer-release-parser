@@ -87,7 +87,7 @@ func main() {
 	allRangeCharts := map[string]apis.Repoes{}
 	for key := range allCharts {
 		if _, ok := allPreviousCharts[key]; ok {
-			if allCharts[key].ImageName != allPreviousCharts[key].ImageName {
+			if allCharts[key].ImageName != allPreviousCharts[key].ImageName || allCharts[key].Chart.Registry != allPreviousCharts[key].Chart.Registry || allCharts[key].Chart.Repository != allPreviousCharts[key].Chart.Repository {
 				removedChartsTextBuilder.WriteString(fmt.Sprintf("- %s v%s: Removed\n", allPreviousCharts[key].ImageName, allPreviousCharts[key].AppVersion))
 				allRangeCharts[key] = apis.Repoes{
 					ImageName: allCharts[key].ImageName,

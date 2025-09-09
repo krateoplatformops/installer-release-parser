@@ -46,7 +46,7 @@ func Pull(chart apis.Chart) error {
 		return err
 	}
 
-	log.Debug().Msgf("%s: helm pull result: %s", chart.Repository, result)
+	log.Debug().Msgf("%s/%s: helm pull result: %s", chart.Registry, chart.Repository, result)
 	return nil
 }
 
@@ -115,6 +115,7 @@ func ParseValues() (map[string]apis.Repoes, error) {
 			log.Warn().Err(err).Msgf("%s: failed to get image.repository", topLevelKey)
 			log.Info().Msgf("Checking %s for hardcoded value", topLevelKey)
 			if value, ok := HARDCODED_REPOSITORIES[topLevelKey]; ok {
+				log.Info().Msgf("Found hardcoded value for %s: %s", topLevelKey, value)
 				imageName = value
 			} else {
 				log.Warn().Err(err).Msgf("Skipping %s: no hardcoded value found", topLevelKey)

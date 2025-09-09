@@ -10,7 +10,7 @@ import (
 
 var (
 	HARDCODED_REPOSITORIES = map[string]string{
-		"composableportalstarter": "composable-portal-starter",
+		"composableportalstarter": "portal",
 		"composableportalbasic":   "composable-portal-basic",
 		"finopspolicies":          "finops-moving-window-policy-chart",
 		"crate":                   "cratedb-chart",
