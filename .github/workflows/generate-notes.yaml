@@ -33,7 +33,7 @@ on:
         type: string
         required: true
         default: 'krateoplatformops'
-      organization:
+      organizations:
         description: 'Comma separetaed list of GitHub Organization to retrieve release notes from'
         type: string
         required: true
@@ -70,6 +70,6 @@ jobs:
           INSTALLER_CHART_VERSION_PREVIOUS: ${{ inputs.installerChartVersionPrevious }}
           TOKEN: ${{ steps.authenticate.outputs.token }}
           INSTALLER_ORGANIZATION: ${{ inputs.installerOrganization }}
-          ORGANIZATIONS: ${{ inputs.organizatios }}
+          ORGANIZATIONS: ${{ inputs.organizations }}
       - id: "RELEASE_NOTES"
         run: cat release_notes.md
