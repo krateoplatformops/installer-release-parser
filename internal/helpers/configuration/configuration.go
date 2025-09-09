@@ -43,8 +43,10 @@ func ParseConfig() Configuration {
 
 	organization := flag.String("organizations",
 		env.String("ORGANIZATIONS", "krateoplatformops,krateoplatformops-blueprints"), "Comma separetaed list of GitHub Organization to retrieve release notes from")
+	log.Logger.Debug().Msgf("List of organizations: %s", *organization)
 
 	organizations := strings.Split(*organization, ",")
+	log.Logger.Debug().Msgf("Parsed list of organizations: %s", organizations)
 
 	// Parse flags
 	flag.Parse()
