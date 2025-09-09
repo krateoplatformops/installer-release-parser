@@ -10,6 +10,7 @@ import (
 
 var (
 	HARDCODED_REPOSITORIES = map[string]string{
+		"finopsnotebooks":         "finops-notebooks-chart",
 		"composableportalstarter": "portal",
 		"composableportalbasic":   "composable-portal-basic",
 		"finopspolicies":          "finops-moving-window-policy-chart",
