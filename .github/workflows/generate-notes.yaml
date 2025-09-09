@@ -22,17 +22,22 @@ on:
         description: 'Installer Chart Version'
         type: string
         required: true
-        default: '2.5.0'
+        default: '2.5.1'
       installerChartVersionPrevious:
         description: 'Installer Chart Previous Version'
         type: string
         required: true
-        default: '2.4.3'
-      organization:
-        description: 'GitHub Organization to retrieve release notes from'
+        default: '2.5.0'
+      installerOrganization:
+        description: 'GitHub Organization to get/publish release notes for the installer'
         type: string
         required: true
         default: 'krateoplatformops'
+      organization:
+        description: 'Comma separetaed list of GitHub Organization to retrieve release notes from'
+        type: string
+        required: true
+        default: 'krateoplatformops,krateoplatformops-blueprints'
 
 env:
   GHCR_REPO: ghcr.io/${{ github.repository }}
@@ -64,6 +69,7 @@ jobs:
           INSTALLER_CHART_VERSION: ${{ inputs.installerChartVersion }}
           INSTALLER_CHART_VERSION_PREVIOUS: ${{ inputs.installerChartVersionPrevious }}
           TOKEN: ${{ steps.authenticate.outputs.token }}
-          ORGANIZATION: ${{ inputs.organization }}
+          INSTALLER_ORGANIZATION: ${{ inputs.installerOrganization }}
+          ORGANIZATIONS: ${{ inputs.organizatios }}
       - id: "RELEASE_NOTES"
         run: cat release_notes.md

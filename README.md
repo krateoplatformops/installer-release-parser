@@ -10,7 +10,8 @@ The script reads the following environment variables/command line arguments
 - `INSTALLER_CHART_VERSION` / `installerchartversion`: defaults to `2.5.0`
 - `INSTALLER_CHART_VERSION_PREVIOUS` / `installerchartversionprevious`: defaults to `2.4.3`, must be smaller than `INSTALLER_CHART_VERSION`
 - `TOKEN` / `token`: defaults to empty (API Requests limited to 60 per hour)
-- `ORGANIZATION` / `organization`: defaults to `krateoplatformops`
+- `INSTALLER_ORGANIZATION` / `installerorganization`: defaults to `krateoplatformops`
+- `ORGANIZATIONS` / `organizations`: defaults to `krateoplatformops`, list of organizations to look into for repositories
 
 # Requirements for a Repository to be listed
 The script looks for all top level keys inside `krateoplatformops` in the values file of the installer chart, and each top level key must have the following or be skipped:
