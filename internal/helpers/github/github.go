@@ -13,11 +13,14 @@ import (
 )
 
 // This function assumes that all repositories listed in the installer exist and are tagged with the installer versions
-func GetReleaseNotes(charts map[string]apis.Repoes, token *string, owners []string) string {
+func GetReleaseNotes(charts map[string]apis.Repoes, tokens []string, owners []string) string {
 	client := github.NewClient(nil)
 
-	if token != nil {
-		client = client.WithAuthToken(*token)
+	clients := map[string]*github.Client{}
+	if len(tokens) != 0 {
+		for i, token := range tokens {
+			clients[owners[i]] = client.WithAuthToken(token)
+		}
 	}
 
 	finalReleaseNotes := ""
@@ -28,7 +31,7 @@ func GetReleaseNotes(charts map[string]apis.Repoes, token *string, owners []stri
 		}
 		for _, owner := range owners {
 			log.Info().Msgf("Generating release notes for %s with tag range %s ... %s", chart.ImageName, chart.AppVersionPrevious, chart.AppVersion)
-			release, response, err := client.Repositories.GenerateReleaseNotes(context.Background(), owner, chart.ImageName, &github.GenerateNotesOptions{
+			release, response, err := clients[owner].Repositories.GenerateReleaseNotes(context.Background(), owner, chart.ImageName, &github.GenerateNotesOptions{
 				TagName:         chart.AppVersion,
 				PreviousTagName: &chart.AppVersionPrevious,
 			})
@@ -39,7 +42,7 @@ func GetReleaseNotes(charts map[string]apis.Repoes, token *string, owners []stri
 				log.Warn().Msg("Container probably missing, trying hardcoded values with chart version...")
 				if value, ok := helm.HARDCODED_REPOSITORIES[chart.ImageName]; ok {
 					log.Info().Msgf("Generating release notes for %s with tag range %s ... %s", value, chart.AppVersionPrevious, chart.AppVersion)
-					release, response, errr := client.Repositories.GenerateReleaseNotes(context.Background(), owner, value, &github.GenerateNotesOptions{
+					release, response, errr := clients[owner].Repositories.GenerateReleaseNotes(context.Background(), owner, value, &github.GenerateNotesOptions{
 						TagName: chart.Version,
 					})
 					if errr != nil {
@@ -64,14 +67,17 @@ func GetReleaseNotes(charts map[string]apis.Repoes, token *string, owners []stri
 func CreateInstallerRelease(releaseNotes string, config configuration.Configuration) {
 	client := github.NewClient(nil)
 
-	if config.Token != nil {
-		client = client.WithAuthToken(*config.Token)
+	clients := map[string]*github.Client{}
+	if len(config.Tokens) != 0 {
+		for i, token := range config.Tokens {
+			clients[config.Organizations[i]] = client.WithAuthToken(token)
+		}
 	}
 
-	release, _, err := client.Repositories.GetReleaseByTag(context.Background(), config.InstallerOrganization, config.InstallerChartGithubRepository, config.InstallerChartVersion)
+	release, _, err := clients[config.InstallerOrganization].Repositories.GetReleaseByTag(context.Background(), config.InstallerOrganization, config.InstallerChartGithubRepository, config.InstallerChartVersion)
 	if err != nil {
 		log.Info().Msgf("Release not found for tag %s", config.InstallerChartVersion)
-		_, response, errr := client.Repositories.CreateRelease(context.Background(), config.InstallerOrganization, config.InstallerChartGithubRepository, &github.RepositoryRelease{
+		_, response, errr := clients[config.InstallerOrganization].Repositories.CreateRelease(context.Background(), config.InstallerOrganization, config.InstallerChartGithubRepository, &github.RepositoryRelease{
 			TagName:    &config.InstallerChartVersion,
 			Name:       stringPointer(fmt.Sprintf("Release Notes For Krateo %s ... %s\n", config.InstallerChartVersionPrevious, config.InstallerChartVersion)),
 			Body:       &releaseNotes,
@@ -86,7 +92,7 @@ func CreateInstallerRelease(releaseNotes string, config configuration.Configurat
 		}
 	} else {
 		release.Body = &releaseNotes
-		_, response, errr := client.Repositories.EditRelease(context.Background(), config.InstallerOrganization, config.InstallerChartGithubRepository, *release.ID, release)
+		_, response, errr := clients[config.InstallerOrganization].Repositories.EditRelease(context.Background(), config.InstallerOrganization, config.InstallerChartGithubRepository, *release.ID, release)
 		if errr != nil {
 			log.Error().Err(err).Msgf("could not edit release")
 			bodyData, _ := io.ReadAll(response.Body)
