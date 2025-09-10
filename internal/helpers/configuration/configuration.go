@@ -14,7 +14,7 @@ type Configuration struct {
 	InstallerChartGithubRepository string   `json:"installerChartGithubRepository" yaml:"installerChartGithubRepository"`
 	InstallerChartVersion          string   `json:"installerChartVersion" yaml:"installerChartVersion"`
 	InstallerChartVersionPrevious  string   `json:"installerChartVersionPrevious" yaml:"installerChartVersionPrevious"`
-	Token                          *string  `json:"token" yaml:"token"`
+	Tokens                         []string `json:"token" yaml:"token"`
 	InstallerOrganization          string   `json:"installerOrganization" yaml:"installerOrganization"`
 	Organizations                  []string `json:"organization" yaml:"organizations"`
 }
@@ -35,8 +35,10 @@ func ParseConfig() Configuration {
 	installerChartVersionPrevious := flag.String("installerchartversionprevious",
 		env.String("INSTALLER_CHART_VERSION_PREVIOUS", "2.5.0"), "Installer Chart Version to generate the release notes from")
 
-	token := flag.String("token",
+	tokens := flag.String("token",
 		env.String("TOKEN", ""), "GitHub bearer/app token for the API")
+
+	tokenList := strings.Split(*tokens, ",")
 
 	installerOrganization := flag.String("installerorganization",
 		env.String("INSTALLER_ORGANIZATION", "krateoplatformops"), "GitHub Organization to get/publish release notes for the installer")
@@ -60,7 +62,7 @@ func ParseConfig() Configuration {
 		InstallerChartGithubRepository: *installerChartGithubRepository,
 		InstallerChartVersion:          *installerChartVersion,
 		InstallerChartVersionPrevious:  *installerChartVersionPrevious,
-		Token:                          token,
+		Tokens:                         tokenList,
 		InstallerOrganization:          *installerOrganization,
 		Organizations:                  organizations,
 	}

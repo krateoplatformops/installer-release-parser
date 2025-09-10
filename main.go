@@ -7,6 +7,7 @@ import (
 	"installer-release-parser/internal/helpers/github"
 	"installer-release-parser/internal/helpers/helm"
 	"os"
+	"slices"
 	"strings"
 
 	"github.com/rs/zerolog"
@@ -19,6 +20,12 @@ func main() {
 
 	log.Info().Msg("Parsing configuration")
 	config := configuration.ParseConfig()
+
+	if !slices.Contains(config.Organizations, config.InstallerOrganization) {
+		log.Warn().Msg("List of organizations does not contain installer organization, adding...")
+		config.Organizations = append([]string{config.InstallerOrganization}, config.Organizations...)
+		log.Debug().Msgf("New list: %s", config.Organizations)
+	}
 
 	// Pull the current installer chart
 	log.Info().Msg("Downloading current installer chart...")
@@ -132,7 +139,7 @@ func main() {
 	// Call the Github API to get the release notes
 	// If config.CreateReleases is set to true, create the release notes for the tag appVersion (if it does not exist)
 	log.Info().Msg("Generating release notes...")
-	finalReleaseNotes := fmt.Sprintf("%s\n%s", removedChartsText, github.GetReleaseNotes(allRangeCharts, config.Token, config.Organizations))
+	finalReleaseNotes := fmt.Sprintf("%s\n%s", removedChartsText, github.GetReleaseNotes(allRangeCharts, config.Tokens, config.Organizations))
 
 	// Write the result to file
 	log.Info().Msg("Writing the release notes to file...")

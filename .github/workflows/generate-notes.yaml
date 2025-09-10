@@ -9,12 +9,12 @@ on:
         required: true
         default: 'https://charts.krateo.io/'
       installerChartRepository:
-        description: 'Installer Chart Reporitory'
+        description: 'Installer Chart Repository'
         type: string
         required: true
         default: 'installer'
       installerChartGithubRepository:
-        description: 'Installer Chart Github Reporitory'
+        description: 'Installer Chart Github Repository'
         type: string
         required: true
         default: 'installer-chart'
@@ -34,7 +34,7 @@ on:
         required: true
         default: 'krateoplatformops'
       organizations:
-        description: 'Comma separetaed list of GitHub Organization to retrieve release notes from'
+        description: 'Comma separated list of GitHub Organizations to retrieve release notes from'
         type: string
         required: true
         default: 'krateoplatformops,krateoplatformops-blueprints'
@@ -51,15 +51,48 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Authenticate with GitHub App
-        id: authenticate
-        uses: tibdex/github-app-token@v1
-        with:
-          app_id: ${{ secrets.APP_ID }}
-          private_key: ${{ secrets.PRIVATE_KEY }}
+
+      # Step that loops orgs and calls create-github-app-token for each
+      - name: Generate tokens for all orgs
+        id: tokens
+        run: |
+          set -e
+          ORGS="${{ inputs.organizations }}"
+          TOKENS=""
+
+          for ORG in $(echo "$ORGS" | tr ',' ' '); do
+            echo "Generating token for $ORG"
+
+            TOKEN_JSON=$(gh api \
+              --method POST \
+              -H "Accept: application/vnd.github+json" \
+              -H "Authorization: Bearer $(ruby -ropenssl -rbase64 -e 'require "jwt"; puts JWT.encode({iss: $ENV["APP_ID"], iat: Time.now.to_i - 60, exp: Time.now.to_i + (10 * 60)}, OpenSSL::PKey::RSA.new(ENV["PRIVATE_KEY"]), "RS256")')" \
+              /app/installations | jq -r ".[] | select(.account.login==\"$ORG\") | .id" | \
+              xargs -I{} gh api \
+                --method POST \
+                -H "Accept: application/vnd.github+json" \
+                -H "Authorization: Bearer $(ruby -ropenssl -rbase64 -e 'require "jwt"; puts JWT.encode({iss: $ENV["APP_ID"], iat: Time.now.to_i - 60, exp: Time.now.to_i + (10 * 60)}, OpenSSL::PKey::RSA.new(ENV["PRIVATE_KEY"]), "RS256")')" \
+                /app/installations/{}/access_tokens)
+
+            TOKEN=$(echo "$TOKEN_JSON" | jq -r .token)
+
+            if [ -z "$TOKENS" ]; then
+              TOKENS="$TOKEN"
+            else
+              TOKENS="$TOKENS,$TOKEN"
+            fi
+          done
+
+          echo "token-list=$TOKENS" >> $GITHUB_OUTPUT
+        env:
+          APP_ID: ${{ secrets.APP_ID }}
+          PRIVATE_KEY: ${{ secrets.PRIVATE_KEY }}
+          GH_TOKEN: ${{ github.token }}
+
       - uses: actions/setup-go@v5
         with:
           go-version: 'stable'
+
       - run: |
           go run main.go
         env:
@@ -68,8 +101,9 @@ jobs:
           INSTALLER_CHART_GITHUB_REPOSITORY: ${{ inputs.installerChartGithubRepository }}
           INSTALLER_CHART_VERSION: ${{ inputs.installerChartVersion }}
           INSTALLER_CHART_VERSION_PREVIOUS: ${{ inputs.installerChartVersionPrevious }}
-          TOKEN: ${{ steps.authenticate.outputs.token }}
+          TOKEN: ${{ steps.tokens.outputs.token-list }}
           INSTALLER_ORGANIZATION: ${{ inputs.installerOrganization }}
           ORGANIZATIONS: ${{ inputs.organizations }}
+
       - id: "RELEASE_NOTES"
         run: cat release_notes.md
