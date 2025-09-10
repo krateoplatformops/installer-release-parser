@@ -44,37 +44,70 @@ env:
 
 jobs:
   generate-notes:
+    runs-on: ubuntu-latest
     permissions:
       contents: write
       pull-requests: read
       issues: read
-    runs-on: ubuntu-latest
+
     steps:
       - uses: actions/checkout@v4
 
-      # Step that loops orgs and calls create-github-app-token for each
-      - name: Generate tokens for all orgs
+      - name: Generate tokens for each organization
         id: tokens
         run: |
-          set -e
-          ORGS="${{ inputs.organizations }}"
+          set -euo pipefail
+
+          APP_ID="${{ secrets.APP_ID }}"
+          PRIVATE_KEY="${{ secrets.PRIVATE_KEY }}"
+
+          # Write private key to a file
+          echo "$PRIVATE_KEY" > key.pem
+
+          # Install jq and openssl for JWT creation
+          sudo apt-get update -y
+          sudo apt-get install -y jq openssl
+
+          generate_jwt() {
+            local app_id=$1
+            local now=$(date +%s)
+            local iat=$((now - 60))
+            local exp=$((now + 600))
+
+            local header=$(printf '{"alg":"RS256","typ":"JWT"}' | openssl base64 -A | tr '+/' '-_' | tr -d '=')
+            local payload=$(printf '{"iat":%s,"exp":%s,"iss":%s}' "$iat" "$exp" "$app_id" | openssl base64 -A | tr '+/' '-_' | tr -d '=')
+
+            local data="$header.$payload"
+            local signature=$(printf '%s' "$data" | openssl dgst -sha256 -sign key.pem | openssl base64 -A | tr '+/' '-_' | tr -d '=')
+
+            echo "$data.$signature"
+          }
+
+          JWT=$(generate_jwt "$APP_ID")
+
           TOKENS=""
 
-          for ORG in $(echo "$ORGS" | tr ',' ' '); do
-            echo "Generating token for $ORG"
+          for ORG in $(echo "${{ inputs.organizations }}" | tr ',' ' '); do
+            echo "Processing org: $ORG"
 
-            TOKEN_JSON=$(gh api \
-              --method POST \
+            # Find installation ID for the org
+            INSTALLATION_ID=$(curl -s -X GET \
+              -H "Authorization: Bearer $JWT" \
               -H "Accept: application/vnd.github+json" \
-              -H "Authorization: Bearer $(ruby -ropenssl -rbase64 -e 'require "jwt"; puts JWT.encode({iss: $ENV["APP_ID"], iat: Time.now.to_i - 60, exp: Time.now.to_i + (10 * 60)}, OpenSSL::PKey::RSA.new(ENV["PRIVATE_KEY"]), "RS256")')" \
-              /app/installations | jq -r ".[] | select(.account.login==\"$ORG\") | .id" | \
-              xargs -I{} gh api \
-                --method POST \
-                -H "Accept: application/vnd.github+json" \
-                -H "Authorization: Bearer $(ruby -ropenssl -rbase64 -e 'require "jwt"; puts JWT.encode({iss: $ENV["APP_ID"], iat: Time.now.to_i - 60, exp: Time.now.to_i + (10 * 60)}, OpenSSL::PKey::RSA.new(ENV["PRIVATE_KEY"]), "RS256")')" \
-                /app/installations/{}/access_tokens)
+              https://api.github.com/app/installations \
+              | jq -r ".[] | select(.account.login==\"$ORG\") | .id")
 
-            TOKEN=$(echo "$TOKEN_JSON" | jq -r .token)
+            if [ -z "$INSTALLATION_ID" ]; then
+              echo "No installation found for $ORG"
+              exit 1
+            fi
+
+            # Create installation token
+            TOKEN=$(curl -s -X POST \
+              -H "Authorization: Bearer $JWT" \
+              -H "Accept: application/vnd.github+json" \
+              https://api.github.com/app/installations/$INSTALLATION_ID/access_tokens \
+              | jq -r .token)
 
             if [ -z "$TOKENS" ]; then
               TOKENS="$TOKEN"
@@ -84,10 +117,6 @@ jobs:
           done
 
           echo "token-list=$TOKENS" >> $GITHUB_OUTPUT
-        env:
-          APP_ID: ${{ secrets.APP_ID }}
-          PRIVATE_KEY: ${{ secrets.PRIVATE_KEY }}
-          GH_TOKEN: ${{ github.token }}
 
       - uses: actions/setup-go@v5
         with:
