@@ -45,7 +45,7 @@ env:
 jobs:
   generate-notes:
     permissions:
-      contents: read
+      contents: write
       pull-requests: read
       issues: read
     runs-on: ubuntu-latest
