@@ -102,4 +102,57 @@ func CreateInstallerRelease(releaseNotes string, config configuration.Configurat
 		}
 	}
 
+	// --- Append release notes to RELEASE_NOTES.md in config.KrateoRepository ---
+	ctx := context.Background()
+
+	// Get the current contents of RELEASE_NOTES.md
+	fileContent, _, resp, err := clients[config.InstallerOrganization].Repositories.GetContents(
+		ctx,
+		config.InstallerOrganization,
+		config.KrateoRepository,
+		"RELEASE_NOTES.md",
+		nil,
+	)
+
+	var newContent string
+	var sha *string
+
+	if err != nil {
+		// If file not found, start a new one
+		if resp != nil && resp.StatusCode == 404 {
+			log.Info().Msg("RELEASE_NOTES.md not found, creating a new one")
+			newContent = fmt.Sprintf("## Release %s\n\n%s\n\n", config.InstallerChartVersion, releaseNotes)
+		} else {
+			log.Error().Err(err).Msg("could not retrieve RELEASE_NOTES.md")
+			return
+		}
+	} else {
+		// Append to existing contents
+		content, err := fileContent.GetContent()
+		if err != nil {
+			log.Error().Err(err).Msg("could not decode RELEASE_NOTES.md")
+			return
+		}
+		newContent = fmt.Sprintf("%s\n\n## Release %s\n\n%s\n\n", content, config.InstallerChartVersion, releaseNotes)
+		sha = fileContent.SHA
+	}
+
+	opts := &github.RepositoryContentFileOptions{
+		Message: github.String(fmt.Sprintf("chore: update release notes for %s", config.InstallerChartVersion)),
+		Content: []byte(newContent),
+		SHA:     sha,
+	}
+
+	_, _, err = clients[config.InstallerOrganization].Repositories.UpdateFile(
+		ctx,
+		config.InstallerOrganization,
+		config.KrateoRepository,
+		"RELEASE_NOTES.md",
+		opts,
+	)
+	if err != nil {
+		log.Error().Err(err).Msg("could not update RELEASE_NOTES.md")
+	} else {
+		log.Info().Msgf("RELEASE_NOTES.md updated for version %s", config.InstallerChartVersion)
+	}
 }

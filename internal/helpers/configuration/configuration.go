@@ -17,6 +17,7 @@ type Configuration struct {
 	Tokens                         []string `json:"token" yaml:"token"`
 	InstallerOrganization          string   `json:"installerOrganization" yaml:"installerOrganization"`
 	Organizations                  []string `json:"organization" yaml:"organizations"`
+	KrateoRepository               string   `json:"krateoRepository" yaml:"krateoRepository"`
 }
 
 func ParseConfig() Configuration {
@@ -50,6 +51,9 @@ func ParseConfig() Configuration {
 	organizations := strings.Split(*organization, ",")
 	log.Logger.Debug().Msgf("Parsed list of organizations: %s", organizations)
 
+	krateoRepository := flag.String("krateorepository",
+		env.String("KRATEO_REPOSITORY", "krateo"), "Repository to append the release notes in /RELEASE_NOTES.md")
+
 	// Parse flags
 	flag.Parse()
 
@@ -65,5 +69,6 @@ func ParseConfig() Configuration {
 		Tokens:                         tokenList,
 		InstallerOrganization:          *installerOrganization,
 		Organizations:                  organizations,
+		KrateoRepository:               *krateoRepository,
 	}
 }
