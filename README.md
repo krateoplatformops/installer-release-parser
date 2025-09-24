@@ -12,6 +12,7 @@ The script reads the following environment variables/command line arguments
 - `TOKEN` / `token`: defaults to empty (API Requests limited to 60 per hour)
 - `INSTALLER_ORGANIZATION` / `installerorganization`: defaults to `krateoplatformops`
 - `ORGANIZATIONS` / `organizations`: defaults to `krateoplatformops`, list of organizations to look into for repositories
+- `KRATEO_REPOSITORY` / `krateorepository`: defaults to `krateo`, repository to append the release notes in /RELEASE_NOTES.md
 
 # Requirements for a Repository to be listed
 The script looks for all top level keys inside `krateoplatformops` in the values file of the installer chart, and each top level key must have the following or be skipped:

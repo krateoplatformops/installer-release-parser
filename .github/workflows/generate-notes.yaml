@@ -38,6 +38,12 @@ on:
         type: string
         required: true
         default: 'krateoplatformops,krateoplatformops-blueprints'
+      krateoRepository:
+        description: 'Repository to append the release notes in /RELEASE_NOTES.md'
+        type: string
+        required: true
+        default: 'krateo'
+      
 
 env:
   GHCR_REPO: ghcr.io/${{ github.repository }}
@@ -133,6 +139,7 @@ jobs:
           TOKEN: ${{ steps.tokens.outputs.token-list }}
           INSTALLER_ORGANIZATION: ${{ inputs.installerOrganization }}
           ORGANIZATIONS: ${{ inputs.organizations }}
+          KRATEO_REPOSITORY: ${{ inputs.krateoRepository }}
 
       - id: "RELEASE_NOTES"
         run: cat release_notes.md
