@@ -121,7 +121,7 @@ func CreateInstallerRelease(releaseNotes string, config configuration.Configurat
 		// If file not found, start a new one
 		if resp != nil && resp.StatusCode == 404 {
 			log.Info().Msg("RELEASE_NOTES.md not found, creating a new one")
-			newContent = fmt.Sprintf("## Release %s\n\n%s\n\n", config.InstallerChartVersion, releaseNotes)
+			newContent = fmt.Sprintf("# Release %s\n\n%s\n\n", config.InstallerChartVersion, releaseNotes)
 		} else {
 			log.Error().Err(err).Msg("could not retrieve RELEASE_NOTES.md")
 			return
@@ -133,7 +133,7 @@ func CreateInstallerRelease(releaseNotes string, config configuration.Configurat
 			log.Error().Err(err).Msg("could not decode RELEASE_NOTES.md")
 			return
 		}
-		newContent = fmt.Sprintf("%s\n\n# Release %s\n\n%s\n\n", content, config.InstallerChartVersion, releaseNotes)
+		newContent = fmt.Sprintf("%s<br><br>\n\n# Release %s\n\n%s\n\n", content, config.InstallerChartVersion, releaseNotes)
 		sha = fileContent.SHA
 	}
 
