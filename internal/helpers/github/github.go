@@ -133,7 +133,7 @@ func CreateInstallerRelease(releaseNotes string, config configuration.Configurat
 			log.Error().Err(err).Msg("could not decode RELEASE_NOTES.md")
 			return
 		}
-		newContent = fmt.Sprintf("# Release %s\n\n%s\n\n<br><br>%s", config.InstallerChartVersion, releaseNotes, content)
+		newContent = fmt.Sprintf("# Release %s\n\n%s\n<br><br>\n%s", config.InstallerChartVersion, releaseNotes, content)
 		sha = fileContent.SHA
 	}
 
